@@ -39,3 +39,6 @@ dist/
 # Windows
 Thumbs.db
 Desktop.ini
+
+# Arquivos protegidos por Windows DPAPI
+*.dpapi
