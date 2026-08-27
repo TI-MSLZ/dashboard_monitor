@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ambiente virtual
+venv/
+.venv/
+env/
+
+# Variáveis e credenciais
+.env
+.env.*
+*.key
+*.pem
+
+# Bancos locais
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Build / executáveis gerados
+build/
+dist/
+*.spec
+
+# VS Code
+.vscode/
+
+# Temporários
+*.tmp
+*.bak
+*.cache
+
+# Windows
+Thumbs.db
+Desktop.ini

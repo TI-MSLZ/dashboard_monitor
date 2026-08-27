@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="{{ url_for('static', filename='professional-theme.css') }}?v=3">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-top"><div class="sidebar-logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="São Luiz">
+        </div></div>
+        <nav class="sidebar-menu">{% include 'sidebar.html' %}</nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="container">
+            <header class="topbar">
+                <div>
+                    <div class="page-title-row">
+                        <span class="page-title-icon"><i class="fa-solid fa-database"></i></span>
+                        <h1>Cadastro</h1>
+                    </div>
+                    <p class="subtitle">Escolha o que deseja cadastrar</p>
+                </div>
+                <div class="topbar-right"><div class="topbar-time">
+                    <span>Usuário</span><strong>{{ usuario }}</strong>
+                </div></div>
+            </header>
+
+            <section class="card cadastro-opcoes-card">
+                <div class="cadastro-opcoes-titulo">
+                    <span>Central de cadastros</span>
+                    <h2>O que você deseja cadastrar?</h2>
+                    <p>Selecione uma das opções abaixo para continuar.</p>
+                </div>
+
+                <div class="cadastro-opcoes-grid {{ '' if usuario_admin else 'sem-usuario' }}">
+                    <a href="{{ url_for('pagina_cadastro_registros', tipo='loja') }}" class="cadastro-opcao loja">
+                        <span class="cadastro-opcao-icone"><i class="fa-solid fa-store"></i></span>
+                        <span class="cadastro-opcao-conteudo">
+                            <strong>Cadastrar loja</strong>
+                            <small>Adicione uma nova loja e seu endereço de rede.</small>
+                        </span>
+                        <i class="fa-solid fa-arrow-right cadastro-opcao-seta"></i>
+                    </a>
+
+                    <a href="{{ url_for('pagina_cadastro_registros', tipo='caixa') }}" class="cadastro-opcao caixa">
+                        <span class="cadastro-opcao-icone"><i class="fa-solid fa-cash-register"></i></span>
+                        <span class="cadastro-opcao-conteudo">
+                            <strong>Cadastrar caixa</strong>
+                            <small>Vincule um novo caixa a uma loja cadastrada.</small>
+                        </span>
+                        <i class="fa-solid fa-arrow-right cadastro-opcao-seta"></i>
+                    </a>
+
+                    {% if usuario_admin %}
+                    <a href="{{ url_for('pagina_usuarios') }}" class="cadastro-opcao usuario">
+                        <span class="cadastro-opcao-icone"><i class="fa-solid fa-user-plus"></i></span>
+                        <span class="cadastro-opcao-conteudo">
+                            <strong>Cadastrar usuário</strong>
+                            <small>Crie acessos e configure as permissões do sistema.</small>
+                        </span>
+                        <i class="fa-solid fa-arrow-right cadastro-opcao-seta"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+</body>
+</html>

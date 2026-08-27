@@ -1,0 +1,64 @@
+{% if tem_permissao('dashboard') %}
+<a href="/" class="menu-item" data-tooltip="Dashboard">
+    <i class="fa-solid fa-house"></i><span>Dashboard</span>
+</a>
+{% endif %}
+
+{% if tem_permissao('cadastro') %}
+<a href="{{ url_for('pagina_cadastro') }}" class="menu-item" data-tooltip="Cadastro">
+    <i class="fa-regular fa-clipboard"></i><span>Cadastro</span>
+</a>
+{% endif %}
+
+{% if tem_permissao('ifood') %}
+<a href="{{ url_for('monitoramento_ifood') }}" class="menu-item" data-tooltip="Monitoramento iFood">
+    <i class="fa-solid fa-bag-shopping"></i><span>iFood</span>
+</a>
+{% endif %}
+
+{% if tem_permissao('caixas') %}
+<a href="{{ url_for('monitoramento_caixas') }}" class="menu-item" data-tooltip="Monitoramento de Caixas">
+    <i class="fa-solid fa-box"></i><span>Caixas</span>
+</a>
+{% endif %}
+
+{% if tem_permissao('catracas') %}
+<a href="{{ url_for('monitoramento_catracas') }}" class="menu-item" data-tooltip="Monitoramento de Catracas">
+    <i class="fa-solid fa-door-open"></i><span>Catracas</span>
+</a>
+{% endif %}
+
+{% if tem_permissao('syspdv') %}
+<a href="{{ url_for('monitoramento_servicos_syspdv') }}" class="menu-item" data-tooltip="Serviços SysPDV">
+    <i class="fa-solid fa-gear"></i><span>Serviços<br>SysPDV</span>
+</a>
+{% endif %}
+
+{% if tem_permissao('vpntef') %}
+<a href="{{ url_for('monitoramento_vpntef') }}" class="menu-item" data-tooltip="Monitoramento VPN TEF">
+    <i class="fa-solid fa-shield-halved"></i><span>VPN<br>TEF</span>
+</a>
+{% endif %}
+
+{% if tem_permissao('crm') %}
+<a href="{{ url_for('monitoramento_crm') }}" class="menu-item" data-tooltip="Monitoramento CRM">
+    <i class="fa-solid fa-server"></i><span>CRM</span>
+</a>
+{% endif %}
+
+{% if tem_permissao('analitico') %}
+<a href="{{ url_for('pagina_analitico') }}" class="menu-item" data-tooltip="Analítico">
+    <i class="fa-solid fa-chart-column"></i><span>Analítico</span>
+</a>
+{% endif %}
+
+<span class="sidebar-divider" aria-hidden="true"></span>
+
+<form method="post" action="{{ url_for('logout') }}" class="sidebar-logout-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="menu-item menu-logout" data-tooltip="Sair do painel">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i><span>Sair</span>
+    </button>
+</form>
+
+<script src="{{ url_for('static', filename='sidebar.js') }}?v=1"></script>

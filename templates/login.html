@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                linear-gradient(90deg, rgba(2, 17, 42, 0.86) 0%, rgba(2, 17, 42, 0.68) 48%, rgba(2, 17, 42, 0.82) 100%),
+                url("/static/sao-luiz-login.jpg") center center / cover no-repeat fixed;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .page {
+            width: 100%;
+            max-width: 1100px;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .brand-panel {
+            padding: 24px 8px;
+        }
+
+        .brand-badge {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(147, 197, 253, 0.22);
+            color: #93c5fd;
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+
+        .brand-panel h1 {
+            font-size: 54px;
+            line-height: 1.05;
+            margin-bottom: 14px;
+            color: #f8fafc;
+            text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
+        }
+
+        .brand-panel p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #b8c8ea;
+            max-width: 560px;
+            text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            justify-self: end;
+            background: rgba(7, 18, 48, 0.88);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            padding: 30px 34px 34px;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .login-logo-top {
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            width: 78px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-logo-top img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(255, 140, 0, 0.15));
+            opacity: 0.95;
+        }
+
+        .login-card h2 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            color: #ffffff;
+            padding-right: 90px;
+        }
+
+        .login-card .desc {
+            color: #b8c8ea;
+            margin-bottom: 24px;
+            font-size: 15px;
+            padding-right: 70px;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #d6e4ff;
+            font-weight: 600;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 13px 14px;
+            border-radius: 12px;
+            border: 1px solid #294a88;
+            background: #0b1a43;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .field input:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.14);
+        }
+
+        .error {
+            background: rgba(255, 69, 69, 0.12);
+            border: 1px solid rgba(255, 69, 69, 0.35);
+            color: #ffb3b3;
+            padding: 12px 14px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            border: 0;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.96;
+        }
+
+        .footer-text {
+            margin-top: 18px;
+            color: #88a1cf;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        @media (max-width: 900px) {
+            .page {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .login-card {
+                justify-self: center;
+            }
+
+            .brand-panel h1 {
+                font-size: 42px;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .login-card {
+                padding: 24px;
+            }
+
+            .login-logo-top {
+                width: 64px;
+                top: 14px;
+                right: 16px;
+            }
+
+            .login-card h2 {
+                font-size: 30px;
+                padding-right: 72px;
+            }
+
+            .login-card .desc {
+                padding-right: 52px;
+            }
+
+            .brand-panel h1 {
+                font-size: 34px;
+            }
+
+            .brand-panel p {
+                font-size: 16px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='professional-theme.css') }}?v=1">
+</head>
+<body class="login-page">
+    <div class="page">
+        <section class="brand-panel">
+            <div class="brand-badge">Painel de monitoramento</div>
+            <h1>Dashboard de Monitoramento</h1>
+            <p>
+                Acompanhe a disponibilidade da rede e do SysTerminal nas lojas
+                em uma interface clara, moderna e centralizada.
+            </p>
+        </section>
+
+        <section class="login-card">
+            <div class="login-logo-top">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="São Luiz">
+            </div>
+
+            <h2>Entrar</h2>
+            <p class="desc">Acesse o dashboard com seu usuário e senha.</p>
+
+            {% if error %}
+                <div class="error">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="field">
+                    <label for="username">Usuário</label>
+                    <input type="text" id="username" name="username" required maxlength="40" autocomplete="username">
+                </div>
+
+                <div class="field">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" required maxlength="128" autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="login-btn">Entrar</button>
+            </form>
+
+            <div class="footer-text">
+                São Luiz • Dashboard de Monitoramento
+            </div>
+        </section>
+    </div>
+</body>
+</html>
