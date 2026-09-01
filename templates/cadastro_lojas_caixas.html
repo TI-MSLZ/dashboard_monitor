@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Lojas e Caixas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="{{ url_for('static', filename='professional-theme.css') }}?v=1">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="São Luiz">
+            </div>
+
+            <nav class="menu">
+                {% include 'sidebar.html' %}
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="container">
+                <header class="topbar">
+                    <div>
+                        <div class="page-title-row">
+                            <span class="page-title-icon"><i class="fa-solid fa-store"></i></span>
+                            <h1>Cadastro de Lojas e Caixas</h1>
+                        </div>
+                        <p class="subtitle">Cadastre lojas e caixas manualmente pelo navegador</p>
+                    </div>
+                </header>
+
+                <div class="monitoring-sections">
+                    <div class="card">
+                        <h2>Nova loja</h2>
+                        <form method="POST">
+                            <input type="hidden" name="tipo" value="loja">
+                            <p><input type="text" name="nome_loja" placeholder="Nome da loja" required></p>
+                            <p><input type="text" name="ip_loja" placeholder="IP da loja" required></p>
+                            <p><button type="submit">Cadastrar loja</button></p>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h2>Novo caixa</h2>
+                        <form method="POST">
+                            <input type="hidden" name="tipo" value="caixa">
+                            <p>
+                                <select name="loja_id" required>
+                                    <option value="">Selecione a loja</option>
+                                    {% for loja in lojas %}
+                                        <option value="{{ loja.id }}">{{ loja.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </p>
+                            <p><input type="text" name="nome_caixa" placeholder="Nome do caixa" required></p>
+                            <p><input type="text" name="identificador" placeholder="Identificador"></p>
+                            <p><button type="submit">Cadastrar caixa</button></p>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:18px;">
+                    <h2>Lojas cadastradas</h2>
+                    <ul>
+                        {% for loja in lojas %}
+                            <li>{{ loja.nome }} - {{ loja.ip }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="card" style="margin-top:18px;">
+                    <h2>Caixas cadastrados</h2>
+                    <ul>
+                        {% for caixa in caixas %}
+                            <li>{{ caixa.loja_nome }} - {{ caixa.nome_caixa }} {% if caixa.identificador %}({{ caixa.identificador }}){% endif %}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

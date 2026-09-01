@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Monitoramento</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="{{ url_for('static', filename='professional-theme.css') }}?v=1">
+</head>
+<body class="dashboard-page">
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="São Luiz">
+            </div>
+
+            <nav class="menu">
+                {% include 'sidebar.html' %}
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="container">
+                <header class="topbar">
+                    <div>
+                        <div class="page-title-row">
+                            <span class="page-title-icon"><i class="fa-solid fa-chart-line"></i></span>
+                            <h1>Dashboard de Monitoramento</h1>
+                        </div>
+                        <p class="subtitle">Visão geral da rede e do SysTerminal nas lojas</p>
+                        <div class="status-strip">
+                            <span id="resumo_rede">Rede: aguardando dados</span>
+                            <span id="resumo_terminal">Terminal: aguardando dados</span>
+                        </div>
+                        <div class="dashboard-refresh-line" aria-hidden="true">
+                            <span id="dashboard_refresh_progress"></span>
+                        </div>
+                    </div>
+
+                    <div class="topbar-right">
+                        <div class="dashboard-actions">
+                            <button id="btn_atualizar_dashboard" type="button" class="dashboard-refresh-btn">
+                                <i class="fa-solid fa-rotate"></i>
+                                <span>Atualizar</span>
+                            </button>
+                            <span class="dashboard-auto-badge">
+                                <i class="fa-regular fa-clock"></i>
+                                <span id="dashboard_refresh_timer">30s</span>
+                            </span>
+                        </div>
+
+                        <div class="topbar-time">
+                            <span>Usuário</span>
+                            <strong>{{ usuario }}</strong>
+                        </div>
+
+                        <div class="topbar-time">
+                            <span>Última verificação</span>
+                            <strong id="ultima_verificacao">Carregando...</strong>
+                        </div>
+
+                        <div class="topbar-time logout-box">
+                            <form method="post" action="{{ url_for('logout') }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="logout-link">Sair</button>
+                            </form>
+                        </div>
+                    </div>
+                </header>
+
+                <section class="hero-grid">
+                    <div class="card hero-card chart-card" id="grafico-rede">
+                        <div class="card-header">
+                            <h2>Rede das lojas</h2>
+                            <span class="card-tag">Online x Offline</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="graficoRede"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="summary-column">
+                        <div class="mini-grid">
+                            <div class="card logo-card">
+                                <img src="{{ url_for('static', filename='logo.png') }}" alt="São Luiz" class="logo-img">
+                            </div>
+
+                            <div class="card mini-card">
+                                <h3>Total de lojas</h3>
+                                <p class="big-number" id="total_lojas">0</p>
+                            </div>
+
+                            <div class="card mini-card metric-card">
+                                <h3>Rede online</h3>
+                                <p class="big-number ok" id="rede_online">0</p>
+                                <div class="metric-bar"><span id="barra_rede_online"></span></div>
+                            </div>
+
+                            <div class="card mini-card">
+                                <h3>Rede offline</h3>
+                                <p class="big-number error" id="rede_offline">0</p>
+                            </div>
+
+                            <div class="card mini-card metric-card">
+                                <h3>Terminal online</h3>
+                                <p class="big-number ok" id="terminal_online">0</p>
+                                <div class="metric-bar"><span id="barra_terminal_online"></span></div>
+                            </div>
+
+                            <div class="card mini-card">
+                                <h3>Terminal offline</h3>
+                                <p class="big-number error" id="terminal_offline">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="stores-section" id="status-lojas">
+                    <div class="section-header stores-toolbar">
+                        <div>
+                            <h2>Status das lojas</h2>
+                            <p>Lista dividida em duas colunas para facilitar a visualização</p>
+                        </div>
+
+                        <div class="dashboard-filters">
+                            <div class="filter-pills" aria-label="Filtros rapidos">
+                                <button type="button" class="filter-pill active" data-dashboard-filter="todos">Todos</button>
+                                <button type="button" class="filter-pill" data-dashboard-filter="online">Online</button>
+                                <button type="button" class="filter-pill" data-dashboard-filter="rede_offline">Rede off</button>
+                                <button type="button" class="filter-pill" data-dashboard-filter="terminal_offline">Terminal off</button>
+                            </div>
+                            <input id="filtro_lojas" type="search" placeholder="Buscar loja ou IP">
+                            <select id="filtro_status">
+                                <option value="todos">Todos</option>
+                                <option value="rede_offline">Rede offline</option>
+                                <option value="terminal_offline">Terminal offline</option>
+                                <option value="online">Tudo online</option>
+                            </select>
+                            <span id="contador_lojas_filtradas" class="dashboard-count-pill">0 lojas</span>
+                        </div>
+                    </div>
+
+                    <div id="painel_detalhe_loja" class="store-detail-panel" hidden>
+                        <div class="store-detail-main">
+                            <span class="store-detail-kicker">Loja selecionada</span>
+                            <h3 id="detalhe_loja_nome">Selecione uma loja</h3>
+                            <p id="detalhe_loja_ip">Clique em uma linha para abrir os detalhes.</p>
+                        </div>
+                        <div class="store-detail-status">
+                            <div>
+                                <span>Rede</span>
+                                <strong id="detalhe_loja_rede">-</strong>
+                            </div>
+                            <div>
+                                <span>Terminal</span>
+                                <strong id="detalhe_loja_terminal">-</strong>
+                            </div>
+                        </div>
+                        <div class="store-detail-actions">
+                            <button id="btn_copiar_ip_detalhe" type="button" class="detail-action-btn">
+                                <i class="fa-regular fa-copy"></i>
+                                Copiar IP
+                            </button>
+                            <a class="detail-action-btn" href="{{ url_for('monitoramento_caixas') }}">
+                                <i class="fa-solid fa-cash-register"></i>
+                                Ver caixas
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="stores-columns">
+                        <div class="card table-card">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Loja</th>
+                                        <th>IP</th>
+                                        <th>Rede</th>
+                                        <th>Terminal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela_lojas_coluna_1">
+                                    <tr>
+                                        <td colspan="4">Carregando...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="card table-card">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Loja</th>
+                                        <th>IP</th>
+                                        <th>Rede</th>
+                                        <th>Terminal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela_lojas_coluna_2">
+                                    <tr>
+                                        <td colspan="4">Carregando...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações dos agentes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="{{ url_for('static', filename='professional-theme.css') }}?v=3">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-top"><div class="sidebar-logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="São Luiz">
+        </div></div>
+        <nav class="sidebar-menu">{% include 'sidebar.html' %}</nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="container config-agentes-page">
+            <header class="topbar">
+                <div>
+                    <div class="page-title-row">
+                        <span class="page-title-icon"><i class="fa-solid fa-shield-halved"></i></span>
+                        <h1>Configurações protegidas dos agentes</h1>
+                    </div>
+                    <p class="subtitle">Credenciais cifradas no MySQL e protegidas por DPAPI em cada loja</p>
+                </div>
+                <div class="topbar-right"><div class="topbar-time">
+                    <span>Usuário</span><strong>{{ usuario }}</strong>
+                </div></div>
+            </header>
+
+            <section class="card config-agente-seletor">
+                <label for="config-loja">Loja</label>
+                <select id="config-loja" class="select-loja">
+                    <option value="">Selecione uma loja</option>
+                    {% for loja in lojas %}
+                    <option value="{{ loja.id }}" data-ip="{{ loja.ip }}">{{ loja.nome }} — {{ loja.ip }}</option>
+                    {% endfor %}
+                </select>
+                <div id="config-status" class="config-agente-status" hidden></div>
+            </section>
+
+            <form id="config-agente-form" hidden>
+                <div class="config-agente-grid">
+                    <section class="card config-agente-card">
+                        <div class="config-agente-card-title">
+                            <i class="fa-solid fa-database"></i>
+                            <div><h2>SQL Server / SysPDV</h2><p>Substitui banco_syspdv.json</p></div>
+                        </div>
+                        <div class="config-form-grid">
+                            <label><span>Servidor</span><input name="sql_servidor" required maxlength="255"></label>
+                            <label><span>Porta</span><input name="sql_porta" type="number" min="1" max="65535" required></label>
+                            <label class="campo-largo"><span>Banco</span><input name="sql_banco" required maxlength="128"></label>
+                            <label><span>Usuário</span><input name="sql_usuario" maxlength="128"></label>
+                            <label><span>Senha</span><input name="sql_senha" type="password" maxlength="512" autocomplete="new-password"><small id="sql-senha-dica">Informe a senha.</small></label>
+                            <label><span>Driver ODBC</span><input name="sql_driver" required maxlength="100"></label>
+                            <label><span>Timeout (s)</span><input name="sql_timeout" type="number" min="2" max="60" required></label>
+                            <label><span>Limite de registros</span><input name="sql_limite" type="number" min="1" max="10000" required></label>
+                            <label class="config-check campo-largo"><input name="sql_windows" type="checkbox"><span>Usar autenticação integrada do Windows</span></label>
+                        </div>
+                    </section>
+
+                    <section class="card config-agente-card">
+                        <div class="config-agente-card-title">
+                            <i class="fa-solid fa-fire-flame-curved"></i>
+                            <div><h2>Firebird dos caixas</h2><p>Substitui firebird_caixas.json</p></div>
+                        </div>
+                        <div class="config-form-grid">
+                            <label><span>Porta</span><input name="fb_porta" type="number" min="1" max="65535" required></label>
+                            <label><span>Charset</span><input name="fb_charset" required maxlength="40"></label>
+                            <label class="campo-largo"><span>Caminho do banco</span><input name="fb_banco" required maxlength="500"></label>
+                            <label><span>Usuário</span><input name="fb_usuario" required maxlength="128"></label>
+                            <label><span>Senha</span><input name="fb_senha" type="password" maxlength="512" autocomplete="new-password"><small id="fb-senha-dica">Informe a senha.</small></label>
+                            <label><span>Timeout (s)</span><input name="fb_timeout" type="number" min="1" max="15" required></label>
+                        </div>
+                    </section>
+                </div>
+
+                <section class="card config-agente-acoes">
+                    <button id="config-testar" type="button" class="cadastro-btn-small"><i class="fa-solid fa-plug-circle-check"></i> Testar conexões</button>
+                    <button id="config-salvar" type="submit" class="cadastro-btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar e sincronizar</button>
+                    <button id="config-consultar" type="button" class="cadastro-btn-small"><i class="fa-solid fa-database"></i> Consultar dados salvos</button>
+                    <button id="config-sincronizar" type="button" class="cadastro-btn-small"><i class="fa-solid fa-rotate"></i> Sincronizar novamente</button>
+                    <button id="config-parear" type="button" class="cadastro-btn-small"><i class="fa-solid fa-key"></i> Exibir chave de pareamento</button>
+                </section>
+            </form>
+
+            <section id="pareamento-box" class="card config-pareamento" hidden>
+                <h2><i class="fa-solid fa-key"></i> Pareamento da loja</h2>
+                <p>Esta chave permite que somente o painel envie configurações cifradas ao agente. Cole-a no script <strong>configurar_pareamento.ps1</strong> executado como Administrador no servidor da loja.</p>
+                <div class="config-chave-row">
+                    <input id="config-chave" type="password" readonly>
+                    <button id="config-mostrar-chave" type="button" class="cadastro-btn-small">Mostrar</button>
+                    <button id="config-copiar-chave" type="button" class="cadastro-btn-small">Copiar</button>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+<script src="{{ url_for('static', filename='security.js') }}?v=1"></script>
+<script src="{{ url_for('static', filename='configuracoes_agentes.js') }}?v=3"></script>
+</body>
+</html>

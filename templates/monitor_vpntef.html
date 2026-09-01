@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento VPN TEF</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <style>
+        .vpntef-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 14px;
+            margin: 14px 0 24px;
+        }
+        .vpntef-summary-grid .mini-card { min-width: 0; }
+        .vpntef-table-card { overflow-x: auto; }
+        .vpntef-table { width: 100%; min-width: 920px; border-collapse: collapse; }
+        .vpntef-table th, .vpntef-table td { padding: 15px 18px; text-align: left; }
+        .vpntef-table th { white-space: nowrap; }
+        .vpntef-store { display: flex; flex-direction: column; gap: 4px; }
+        .vpntef-store span, .vpntef-hostname { color: #91a8c5; font-size: .75rem; }
+        .vpntef-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 108px;
+            padding: 7px 12px;
+            border: 1px solid;
+            border-radius: 999px;
+            font-size: .72rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .vpntef-online { color: #74f5ae; border-color: #07834b; background: rgba(0, 185, 104, .12); }
+        .vpntef-offline { color: #ff8090; border-color: #9e3045; background: rgba(255, 75, 95, .13); }
+        .vpntef-warning { color: #ffd373; border-color: #9a6a18; background: rgba(255, 185, 54, .12); }
+        .vpntef-row-alert { background: rgba(255, 74, 94, .045); }
+        .vpntef-section { margin-top: 8px; }
+        .vpntef-empty { padding: 28px !important; text-align: center !important; color: #91a8c5; }
+        .vpntef-filter-card {
+            cursor: pointer;
+            position: relative;
+            transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+        }
+        .vpntef-filter-card:hover { border-color: rgba(54, 174, 255, .65); transform: translateY(-2px); }
+        .vpntef-filter-card:focus-visible { outline: 3px solid rgba(54, 174, 255, .45); outline-offset: 3px; }
+        .vpntef-filter-card.is-active {
+            border-color: #27b6ff;
+            box-shadow: 0 0 0 2px rgba(39, 182, 255, .18), 0 10px 30px rgba(0, 0, 0, .22);
+        }
+        .vpntef-filter-card.is-active::after {
+            content: "FILTRO ATIVO";
+            position: absolute;
+            right: 12px;
+            bottom: 8px;
+            color: #54c9ff;
+            font-size: .58rem;
+            font-weight: 900;
+            letter-spacing: .06em;
+        }
+        .vpntef-sound-button {
+            margin-left: 10px;
+            padding: 9px 12px;
+            border: 1px solid #27547d;
+            border-radius: 9px;
+            color: #b9d7f5;
+            background: rgba(10, 34, 63, .85);
+            cursor: pointer;
+        }
+        .vpntef-sound-button:hover { border-color: #27b6ff; color: #fff; }
+        .vpntef-alert-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(1, 9, 23, .78);
+            backdrop-filter: blur(5px);
+        }
+        .vpntef-alert-overlay[hidden] { display: none; }
+        .vpntef-alert-modal {
+            width: min(560px, 100%);
+            overflow: hidden;
+            border: 1px solid #a9384f;
+            border-radius: 18px;
+            color: #eaf5ff;
+            background: #0a1b32;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, .55), 0 0 35px rgba(255, 65, 91, .16);
+        }
+        .vpntef-alert-header { position: relative; display: flex; gap: 15px; align-items: flex-start; padding: 22px 22px 16px; }
+        .vpntef-alert-symbol {
+            display: grid;
+            flex: 0 0 48px;
+            height: 48px;
+            place-items: center;
+            border: 1px solid #a9384f;
+            border-radius: 14px;
+            color: #ff7185;
+            background: rgba(255, 65, 91, .13);
+            font-size: 1.35rem;
+        }
+        .vpntef-alert-header h2 { margin: 0 34px 5px 0; font-size: 1.25rem; }
+        .vpntef-alert-header p { margin: 0; color: #9eb6d1; }
+        .vpntef-alert-close { position: absolute; top: 18px; right: 18px; border: 0; color: #9eb6d1; background: transparent; cursor: pointer; font-size: 1.1rem; }
+        .vpntef-alert-list { max-height: 310px; margin: 0; padding: 0 22px; overflow-y: auto; list-style: none; }
+        .vpntef-alert-list li { padding: 13px 0; border-top: 1px solid rgba(113, 149, 187, .16); }
+        .vpntef-alert-list strong { display: block; margin-bottom: 4px; color: #fff; }
+        .vpntef-alert-list span { color: #ff9aaa; font-size: .86rem; }
+        .vpntef-alert-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 18px 22px 22px; }
+        .vpntef-alert-actions button { padding: 10px 15px; border-radius: 9px; cursor: pointer; font-weight: 800; }
+        .vpntef-alert-secondary { border: 1px solid #31577c; color: #c5daf0; background: #102844; }
+        .vpntef-alert-primary { border: 1px solid #c2475b; color: #fff; background: #a82d43; }
+        @media (max-width: 1250px) { .vpntef-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media (max-width: 760px) {
+            .vpntef-summary-grid { grid-template-columns: 1fr; }
+            .vpntef-alert-actions { flex-direction: column-reverse; }
+        }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='professional-theme.css') }}?v=1">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="São Luiz"></div>
+            <nav class="menu">{% include 'sidebar.html' %}</nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="container">
+                <header class="topbar">
+                    <div>
+                        <div class="page-title-row">
+                            <span class="page-title-icon"><i class="fa-solid fa-shield-halved"></i></span>
+                            <h1>Monitoramento VPN TEF</h1>
+                        </div>
+                        <p class="subtitle">Disponibilidade dos processos OpenVPN nas lojas</p>
+                    </div>
+                    <div class="topbar-right">
+                        <div class="topbar-time info-box">
+                            <i class="fa-regular fa-user"></i>
+                            <div><span>Usuário</span><strong>{{ usuario }}</strong></div>
+                        </div>
+                        <div class="topbar-time info-box">
+                            <i class="fa-regular fa-clock"></i>
+                            <div><span>Última verificação</span><strong id="vpntef_ultima_verificacao">-</strong></div>
+                        </div>
+                    </div>
+                </header>
+
+                <section class="card catracas-filtros">
+                    <div>
+                        <label for="filtro_vpntef">Filtrar lojas</label>
+                        <select id="filtro_vpntef" class="select-loja">
+                            <option value="todas">Todas as lojas</option>
+                            <option value="todos_alertas">Qualquer alerta (agente ou serviÃ§o)</option>
+                            <option value="saudavel">VPN TEF saudável</option>
+                            <option value="alerta">Com processo offline</option>
+                            <option value="sem_resposta">Agente sem resposta</option>
+                            <option value="openvpnserv_offline">openvpnserv.exe offline</option>
+                            <option value="openvpnserv2_offline">openvpnserv2.exe offline</option>
+                        </select>
+                    </div>
+                    <button type="button" id="btn_atualizar_vpntef" class="catracas-atualizar">
+                        <i class="fa-solid fa-rotate"></i> Atualizar agora
+                    </button>
+                    <button type="button" id="btn_som_vpntef" class="vpntef-sound-button" aria-pressed="true" title="Ativar ou desativar o alerta sonoro">
+                        <i class="fa-solid fa-volume-high"></i> <span>Som ligado</span>
+                    </button>
+                </section>
+
+                <section class="vpntef-summary-grid">
+                <div class="card mini-card metric-card-icon">
+                        <div><h3>Agentes online</h3><p class="big-number ok" id="vpntef_agentes_online">0</p></div>
+                        <span class="mini-icon icon-green"><i class="fa-solid fa-satellite-dish"></i></span>
+                    </div>
+                <div class="card mini-card metric-card-icon vpntef-filter-card" id="card_vpntef_agentes_offline" role="button" tabindex="0" aria-pressed="false" data-filtro="sem_resposta" title="Filtrar lojas com agente offline">
+                        <div><h3>Agentes offline</h3><p class="big-number error" id="vpntef_agentes_offline">0</p></div>
+                        <span class="mini-icon icon-red"><i class="fa-solid fa-tower-broadcast"></i></span>
+                    </div>
+                    <div class="card mini-card metric-card-icon">
+                        <div><h3>OpenVPN principal</h3><p class="big-number ok" id="vpntef_openvpnserv_online">0</p></div>
+                        <span class="mini-icon icon-cyan"><i class="fa-solid fa-lock"></i></span>
+                    </div>
+                    <div class="card mini-card metric-card-icon">
+                        <div><h3>OpenVPN secundária</h3><p class="big-number ok" id="vpntef_openvpnserv2_online">0</p></div>
+                        <span class="mini-icon icon-cyan"><i class="fa-solid fa-lock"></i></span>
+                    </div>
+                <div class="card mini-card metric-card-icon vpntef-filter-card" id="card_vpntef_lojas_alerta" role="button" tabindex="0" aria-pressed="false" data-filtro="alerta" title="Filtrar lojas com serviÃ§o parado">
+                    <div><h3>Lojas com alerta</h3><p class="big-number error" id="vpntef_lojas_alerta">0</p></div>
+                        <span class="mini-icon icon-red"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    </div>
+                </section>
+
+                <section class="stores-section vpntef-section">
+                    <div class="section-header">
+                        <div>
+                            <h2><i class="fa-solid fa-shield-halved section-icon"></i> VPN TEF por loja</h2>
+                            <p id="vpntef_resumo_lista">Consultando os agentes das lojas...</p>
+                        </div>
+                    </div>
+                    <div class="card table-card vpntef-table-card">
+                        <table class="vpntef-table">
+                            <thead>
+                                <tr>
+                                    <th>Loja</th>
+                                    <th>Status geral</th>
+                                    <th>Agente</th>
+                                    <th>Hostname</th>
+                                    <th>openvpnserv.exe</th>
+                                    <th>openvpnserv2.exe</th>
+                                    <th>Verificado pelo agente</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela_vpntef">
+                                <tr><td colspan="7" class="vpntef-empty">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div class="vpntef-alert-overlay" id="vpntef_alerta_overlay" hidden>
+        <div class="vpntef-alert-modal" role="alertdialog" aria-modal="true" aria-labelledby="vpntef_alerta_titulo" aria-describedby="vpntef_alerta_descricao">
+            <div class="vpntef-alert-header">
+                <span class="vpntef-alert-symbol"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                <div>
+                    <h2 id="vpntef_alerta_titulo">AtenÃ§Ã£o no Monitoramento VPN TEF</h2>
+                    <p id="vpntef_alerta_descricao">Foi detectada uma nova ocorrÃªncia.</p>
+                </div>
+                <button type="button" class="vpntef-alert-close" id="btn_fechar_alerta_vpntef" aria-label="Fechar alerta"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <ul class="vpntef-alert-list" id="vpntef_alerta_lista"></ul>
+            <div class="vpntef-alert-actions">
+                <button type="button" class="vpntef-alert-secondary" id="btn_ativar_som_vpntef"><i class="fa-solid fa-volume-high"></i> Testar som</button>
+                <button type="button" class="vpntef-alert-primary" id="btn_ver_alertas_vpntef">Ver lojas afetadas</button>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='monitor_vpntef.js') }}?v=3"></script>
+</body>
+</html>

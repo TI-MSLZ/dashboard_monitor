@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento Caixas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="{{ url_for('static', filename='professional-theme.css') }}?v=1">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="São Luiz">
+            </div>
+
+            <nav class="menu">
+                {% include 'sidebar.html' %}
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="container">
+                <header class="topbar">
+                    <div>
+                        <div class="page-title-row">
+                            <span class="page-title-icon"><i class="fa-solid fa-wave-square"></i></span>
+                            <h1>Monitoramento Caixas</h1>
+                        </div>
+                        <p class="subtitle">Selecione uma loja para visualizar os caixas</p>
+                    </div>
+
+                    <div class="topbar-right">
+                        <div class="topbar-time info-box">
+                            <i class="fa-regular fa-user"></i>
+                            <div>
+                                <span>Usuário</span>
+                                <strong>{{ usuario }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="topbar-time info-box">
+                            <i class="fa-regular fa-clock"></i>
+                            <div>
+                                <span>Última verificação</span>
+                                <strong id="ultima_verificacao">-</strong>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <section class="card filtro-card">
+                    <div class="filtro-header">
+                        <h2>Selecionar loja</h2>
+                    </div>
+
+                    <div class="filtro-row">
+                        <select id="select_loja" class="select-loja">
+                            <option value="">Selecione uma loja</option>
+                            <option value="TODAS" selected>Todas as lojas</option>
+                            {% for loja in lojas %}
+                                <option value="{{ loja }}">{{ loja }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </section>
+
+                <section class="hero-grid caixas-hero-grid">
+                    <div class="card mini-card metric-card-icon">
+                        <div>
+                            <h3>Loja selecionada</h3>
+                            <p class="big-number" id="loja_selecionada">-</p>
+                        </div>
+                        <span class="mini-icon icon-blue"><i class="fa-solid fa-store"></i></span>
+                    </div>
+
+                    <div class="card mini-card metric-card-icon">
+                        <div>
+                            <h3>Total de caixas</h3>
+                            <p class="big-number" id="total_caixas">0</p>
+                        </div>
+                        <span class="mini-icon icon-cyan"><i class="fa-solid fa-desktop"></i></span>
+                    </div>
+
+                    <div class="card mini-card metric-card-icon">
+                        <div>
+                            <h3>Caixas online</h3>
+                            <p class="big-number ok" id="caixas_online">0</p>
+                        </div>
+                        <span class="mini-icon icon-green"><i class="fa-solid fa-signal"></i></span>
+                    </div>
+
+                    <div class="card mini-card card-clickable card-offline-filter metric-card-icon" id="card_caixas_offline" title="Clique para ver somente os caixas offline">
+                        <div>
+                            <div class="metric-title-row">
+                                <h3>Caixas offline</h3>
+                                <span id="badge_filtro_offline" class="filter-badge-side" hidden>Filtro ativo</span>
+                            </div>
+                            <p class="big-number error" id="caixas_offline">0</p>
+                        </div>
+                        <span class="mini-icon icon-red"><i class="fa-regular fa-circle-xmark"></i></span>
+                    </div>
+
+
+                    <div class="card mini-card metric-card-icon">
+                        <div>
+                            <h3>Status da loja</h3>
+                            <p class="big-number" id="status_loja">-</p>
+                        </div>
+                        <span class="mini-icon icon-green"><i class="fa-solid fa-shield-halved"></i></span>
+                    </div>
+
+                    <div class="card mini-card metric-card-icon">
+                        <div>
+                            <h3>IP</h3>
+                            <p class="big-number" id="ip_loja">-</p>
+                        </div>
+                        <span class="mini-icon icon-purple"><i class="fa-solid fa-globe"></i></span>
+                    </div>
+                </section>
+
+                <section class="stores-section">
+                    <div class="section-header">
+                        <div>
+                            <h2><i class="fa-solid fa-clipboard-list section-icon"></i> Caixas da loja</h2>
+                            <p>Visualização individual dos caixas da loja selecionada</p>
+                        </div>
+
+                        <label class="filtro-observacao" for="filtro_observacao">
+                            <span>Filtrar observação</span>
+                            <span class="filtro-observacao-campo">
+                                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                <input
+                                    type="search"
+                                    id="filtro_observacao"
+                                    placeholder="Digite uma observação"
+                                    autocomplete="off"
+                                >
+                            </span>
+                        </label>
+                    </div>
+
+                    <div id="mensagem-filtro-caixas" class="filtro-status-msg" style="display:none;"></div>
+                    <div class="card table-card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="col-loja">Loja</th>
+                                    <th class="col-caixa">Caixa / descrição</th>
+                                    <th class="col-ip-caixa">IP</th>
+                                    <th class="col-observacao">Observação</th>
+                                    <th class="col-status">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela_caixas_loja">
+                                <tr>
+                                    <td colspan="5" class="empty-row">Carregando...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='monitor_caixas.js') }}?v=14"></script>
+</body>
+</html>
